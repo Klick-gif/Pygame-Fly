@@ -22,6 +22,6 @@ __pycache__/
 *.pyd
 
 # 下载文件
-.spec
-.build/
-.dist/
+build/
+dist/
+*.spec
