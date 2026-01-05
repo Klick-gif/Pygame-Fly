@@ -1,12 +1,20 @@
 # 这个文件负责管理所有与文字相关的事情
 
 import pygame
+import os 
+import sys
 from config import *
 
+# 获取资源路径函数
+def resource_path(relative_path):
+    """获取资源路径, 兼容打包"""
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
 
 pygame.font.init()
-fp_font = pygame.font.Font("fonts/zh-cn.ttf", 72)
-s_font = pygame.font.Font("fonts/zh-cn.ttf", 45)
+fp_font = pygame.font.Font(resource_path("fonts/zh-cn.ttf"), 72)
+s_font = pygame.font.Font(resource_path("fonts/zh-cn.ttf"), 45)
 s_size = s_font.size("start")
 s_original_pos = ((WINDOW_SIZE[0] - s_size[0]) // 2, (WINDOW_SIZE[1] - s_size[1]) * 1.4 // 2)
 s_rect = pygame.rect.Rect(s_original_pos, s_size)

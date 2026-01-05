@@ -4,15 +4,22 @@ import pygame
 from math import sin
 import random
 from config import *
+import sys
+import os
 
-
+# 获取资源路径函数
+def resource_path(relative_path):
+    """获取资源路径, 兼容打包"""
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
 
 class PillarGroup(pygame.sprite.Group):
 
     def __init__(self, surface, gap):
         super(PillarGroup, self).__init__()
-        high_img = pygame.image.load("images/high_tube.png")
-        low_img = pygame.image.load("images/low_tube.png")
+        high_img = pygame.image.load(resource_path("images/high_tube.png"))
+        low_img = pygame.image.load(resource_path("images/low_tube.png"))
         Spacing = 520
         self.surface = surface
         self.high_img = high_img
@@ -73,13 +80,13 @@ class Paimon(pygame.sprite.Sprite):
         # 加载派蒙的图片
         paimon_size = (78, 117)
         # 跳跃阶段图片
-        self.image1 = pygame.transform.smoothscale(pygame.image.load("images/paimon1.png"), paimon_size)
+        self.image1 = pygame.transform.smoothscale(pygame.image.load(resource_path("images/paimon1.png")), paimon_size)
         # 准备阶段图片
-        self.image2 = pygame.transform.smoothscale(pygame.image.load("images/paimon2.png"), paimon_size)
+        self.image2 = pygame.transform.smoothscale(pygame.image.load(resource_path("images/paimon2.png")), paimon_size)
         # 下落图片
-        self.image3 = pygame.transform.smoothscale(pygame.image.load("images/paimon3.png"), paimon_size)
+        self.image3 = pygame.transform.smoothscale(pygame.image.load(resource_path("images/paimon3.png")), paimon_size)
         # 跌落图片
-        self.image4 = pygame.transform.smoothscale(pygame.image.load("images/paimon4.png"), paimon_size)
+        self.image4 = pygame.transform.smoothscale(pygame.image.load(resource_path("images/paimon4.png")), paimon_size)
         # 默认状态
         self.image = self.image1
         # 设置派蒙的初始位置--屏幕中间
@@ -145,7 +152,7 @@ class Grass(pygame.sprite.Sprite):
     def __init__(self):
         # 一个循环的长度是113
         super(Grass, self).__init__()
-        self.image = pygame.transform.scale(pygame.image.load("images/grass_test.png"), (2000, 100))
+        self.image = pygame.transform.scale(pygame.image.load(resource_path("images/grass_test.png")), (2000, 100))
         self.size = self.image.get_size()
         self.rect = [0, WINDOW_SIZE[1] - 100, 2000, 100]
         self.spd = BG_SPEED

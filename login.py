@@ -4,9 +4,21 @@ import json
 import os
 import main
 import webbrowser
+import sys
+import subprocess
 
 USER_FILE = 'users.json'
 HISTORY_FILE = 'history.json'
+
+
+def resource_path(relative_path):
+    """获取资源的绝对路径，兼容PyInstaller打包后的路径"""
+    try:
+        # PyInstaller创建临时文件夹，将路径存储在_MEIPASS中
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 # 初始化
 def init_files():
@@ -67,9 +79,12 @@ def create_login_window():
         password = password_entry.get()
         user = login(username, password)
         if user:
-            messagebox.showinfo("Login Success", f"Logged in as {user['username']}")
-            login_window.destroy()
-            main.main()
+            try:
+                messagebox.showinfo("Login Success", f"Logged in as {user['username']}")
+                login_window.destroy()
+                main.main()
+            except Exception as e:
+                messagebox.showerror("Error", str(e))
 
         else:
             password_entry.delete(0, tk.END)
@@ -77,7 +92,7 @@ def create_login_window():
 
     # 打开说明HTML界面
     def open_html():
-        webbrowser.open('operate_introduction.html')  # 本地文件
+        webbrowser.open(resource_path('operate_introduction.html'))  # 本地文件
 
     messagebox.showinfo("提醒","先查看游戏介绍，再登录进入游戏玩。")
     # 登录页面尺寸
@@ -108,6 +123,8 @@ def create_login_window():
 
     # 关闭窗口
     login_window.mainloop()
+
+
 
 if __name__ == "__main__":
     init_files()

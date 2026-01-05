@@ -1,13 +1,10 @@
 import pygame
 from pygame import mixer
-import sys
 import Sprites
 from Text import *
-from config import *
 import login
 import time
 import random
-
 
 
 def main():
@@ -18,29 +15,30 @@ def main():
 
     # initialize window
     # 设置主栏图标
-    icon = pygame.image.load("GenshinImpact.ico")
+    icon = pygame.image.load(resource_path("GenshinImpact.ico"))
     pygame.display.set_icon(icon)
     # 主栏游戏名
     pygame.display.set_caption("原神启动")
     # 设置窗口大小
     window = pygame.display.set_mode(WINDOW_SIZE)
     # 设置鼠标光标
-    png = pygame.image.load("images/aniya.png")
+    png = resource_path("images/aniya.png")
+    png = pygame.image.load(png)
     # imageWidth = png.get_width()
     # imageHeight = png.get_height()
     pygame.mouse.set_cursor((16, 16), png)
 
     # 加载背景音乐
-    mixer.music.load("music/bg_music.mp3")
+    mixer.music.load(resource_path("music/bg_music.mp3"))
     mixer.music.set_volume(MUSIC_VOLUME)
     # 加载跳跃声效
-    jump = mixer.Sound("music/jump.wav")
+    jump = mixer.Sound(resource_path("music/jump.wav"))
     jump.set_volume(MUSIC_VOLUME)
     # 加载碰撞死亡声效
-    hit = mixer.Sound("music/hit.mp3")
+    hit = mixer.Sound(resource_path("music/hit.mp3"))
     hit.set_volume(MUSIC_VOLUME)
     # 标题
-    title = pygame.image.load("images/yuanshen1.png")
+    title = pygame.image.load(resource_path("images/yuanshen1.png"))
 
     # 下载精灵（派蒙）
     paimon = Sprites.Paimon()
@@ -48,11 +46,8 @@ def main():
     pillars = Sprites.PillarGroup(window, 300)
     # 下载草
     grass = Sprites.Grass()
-    # 创建精灵组
-    sprites = pygame.sprite.Group(paimon, grass, pillars)
     # 设置时钟
     clock = pygame.time.Clock()
-
 
     """
         # 时间管理对象
@@ -78,7 +73,6 @@ def main():
             self.count += 1
             
     """
-
 
     # 准备阶段
     def prepare():
@@ -117,14 +111,20 @@ def main():
             window.fill((130, 150, 200))
 
             # 获取现在的时间
-            t = pygame.time.get_ticks()/1000
+            t = pygame.time.get_ticks() / 1000
             # 开始按键
-            start_Button(window, (0,0))
+            start_Button(window, (0, 0))
             # 派蒙的掉落
             paimon.prepare(window, t)
             # 更新草一帧移动
             grass.update(window, t)
-            window.blit(title, ((WINDOW_SIZE[0]-title.get_width())//2, WINDOW_SIZE[1]-title.get_height()-300))
+            window.blit(
+                title,
+                (
+                    (WINDOW_SIZE[0] - title.get_width()) // 2,
+                    WINDOW_SIZE[1] - title.get_height() - 300,
+                ),
+            )
 
             # 更新屏幕内容
             pygame.display.flip()
@@ -136,10 +136,9 @@ def main():
             当肉眼看不清图片动画变化的时候那么将呈现的就是连续的画面--动画片
             """
 
-
     def start():
         # run = True
-        t_prepare = pygame.time.get_ticks()/1000
+        t_prepare = pygame.time.get_ticks() / 1000
         while True:
             # 处理事件
             for event in pygame.event.get():
@@ -159,7 +158,7 @@ def main():
             window.fill((130, 150, 200))
 
             # 获取当前时间
-            t = pygame.time.get_ticks()/1000
+            t = pygame.time.get_ticks() / 1000
 
             # 显示时间
             show_text(window, str(round(t - t_prepare, 2)), (0, -130))
@@ -169,11 +168,12 @@ def main():
             paimon.start(window)
             grass.update(window)
             # print(pillars.spd, grass.spd)
-            pillars.gap = random.randint(180,350)
-
+            pillars.gap = random.randint(180, 350)
 
             # noinspection PyTypeChecker
-            check1 = pygame.sprite.spritecollideany(paimon, pillars, pygame.sprite.collide_rect_ratio(0.8))
+            check1 = pygame.sprite.spritecollideany(
+                paimon, pillars, pygame.sprite.collide_rect_ratio(0.8)
+            )
             # noinspection PyTypeChecker
             check2 = pygame.sprite.collide_rect(paimon, grass)
 
@@ -188,7 +188,6 @@ def main():
             pygame.display.flip()
             # time_manager.step()
             clock.tick(FPS)
-
 
     def end():
         mixer.music.stop()
@@ -221,15 +220,13 @@ def main():
             # 黑色
             window.fill((0, 0, 0))
             show_text(window, str(t_end), (0, -100), font=fp_font)
-            show_text(window, "最佳记录: " + str(dic1[0]['best_score']), (0, 50))
-            img = pygame.image.load("images/siwang.png")
-            show_image(window, img,(0, 200))
+            show_text(window, "最佳记录: " + str(dic1[0]["best_score"]), (0, 50))
+            img = pygame.image.load(resource_path("images/siwang.png"))
+            show_image(window, img, (0, 200))
             show_image(window, paimon.image4, (-200, 200))
             pygame.display.flip()
 
-
             # pygame.time.delay(1500)
-
 
     r = True
     while r:
@@ -239,19 +236,23 @@ def main():
         pillars = Sprites.PillarGroup(window, 300)
         # 下载草
         grass = Sprites.Grass()
-        # 创建精灵组
-        sprites = pygame.sprite.Group(paimon, grass, pillars)
         # 设置时钟
         clock = pygame.time.Clock()
         prepare()
         t_end = start()
         ls = login.load_data(login.HISTORY_FILE)
-        dic = {'time': 0, 'history_score': 0}
-        s = "{}-{}-{} {}:{}:{}".format(t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec)
-        dic['time'], dic['history_score'] = s, t_end
+        dic = {"time": 0, "history_score": 0}
+        s = "{}-{}-{} {}:{}:{}".format(
+            t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec
+        )
+        dic["time"], dic["history_score"] = s, t_end
         ls.append(dic)
-        if t_end > ls[0]['best_score']:
-            ls[0]['best_score'] = t_end
+        if t_end > ls[0]["best_score"]:
+            ls[0]["best_score"] = t_end
         login.save_data(login.HISTORY_FILE, ls)
         r = end()
     pygame.quit()
+
+
+if __name__ == "__main__":
+    main()

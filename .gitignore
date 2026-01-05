@@ -1,0 +1,27 @@
+# 虚拟环境目录
+.venv/
+
+# Python 编译文件
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 日志文件
+*.log
+
+# 环境变量文件
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Pygame 相关缓存（如果有）
+*.pyc
+*.pyo
+*.pyd
+
+# 下载文件
+.spec
+.build/
+.dist/
