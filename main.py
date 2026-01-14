@@ -26,7 +26,7 @@ def main():
     png = pygame.image.load(png)
     # imageWidth = png.get_width()
     # imageHeight = png.get_height()
-    pygame.mouse.set_cursor((16, 16), png)
+    pygame.mouse.set_cursor(pygame.cursors.Cursor((16, 16), png))
 
     # 加载背景音乐
     mixer.music.load(resource_path("music/bg_music.mp3"))

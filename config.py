@@ -6,7 +6,7 @@ FPS = 60  # 最好是240的因数
 TIMESPAN = 1 / FPS
 
 # 背景的加速度
-BG_AC = 0.001
+BG_AC = 0.5
 # 背景的速度
 BG_SPEED = 240
 # 移动的距离

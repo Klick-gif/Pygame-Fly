@@ -5,10 +5,64 @@ import os
 import main
 import webbrowser
 import sys
-import subprocess
+import hashlib
+import secrets
 
-USER_FILE = 'users.json'
-HISTORY_FILE = 'history.json'
+APP_NAME = "Pygame-Fly"
+LEGACY_USER_FILE = "users.json"
+LEGACY_HISTORY_FILE = "history.json"
+
+PASSWORD_SCHEME = "pbkdf2_sha256"
+PASSWORD_ITERATIONS = 120_000
+MIN_USERNAME_LEN = 1
+MIN_PASSWORD_LEN = 4
+MAX_FIELD_LEN = 64
+
+def get_data_dir():
+    # Prefer user profile app data; fall back to current working dir.
+    base = os.getenv("LOCALAPPDATA") or os.getenv("APPDATA") or os.path.abspath(".")
+    return os.path.join(base, APP_NAME)
+
+def get_data_path(filename):
+    return os.path.join(get_data_dir(), filename)
+
+USER_FILE = get_data_path("users.json")
+HISTORY_FILE = get_data_path("history.json")
+
+def _hash_password(password, salt=None):
+    if salt is None:
+        salt = secrets.token_hex(16)
+    dk = hashlib.pbkdf2_hmac(
+        "sha256",
+        password.encode("utf-8"),
+        salt.encode("utf-8"),
+        PASSWORD_ITERATIONS,
+    )
+    return f"{PASSWORD_SCHEME}${PASSWORD_ITERATIONS}${salt}${dk.hex()}"
+
+def _verify_password(stored, password):
+    if not stored.startswith(f"{PASSWORD_SCHEME}$"):
+        return stored == password
+    try:
+        _, iterations, salt, digest = stored.split("$", 3)
+        dk = hashlib.pbkdf2_hmac(
+            "sha256",
+            password.encode("utf-8"),
+            salt.encode("utf-8"),
+            int(iterations),
+        )
+        return secrets.compare_digest(dk.hex(), digest)
+    except Exception:
+        return False
+
+def _maybe_migrate_legacy_files():
+    os.makedirs(get_data_dir(), exist_ok=True)
+    if not os.path.exists(USER_FILE) and os.path.exists(LEGACY_USER_FILE):
+        users = load_data(LEGACY_USER_FILE)
+        save_data(USER_FILE, users)
+    if not os.path.exists(HISTORY_FILE) and os.path.exists(LEGACY_HISTORY_FILE):
+        history = load_data(LEGACY_HISTORY_FILE)
+        save_data(HISTORY_FILE, history)
 
 
 def resource_path(relative_path):
@@ -22,39 +76,52 @@ def resource_path(relative_path):
 
 # 初始化
 def init_files():
+    _maybe_migrate_legacy_files()
     if not os.path.exists(USER_FILE):
-        with open(USER_FILE, 'w') as file:
+        with open(USER_FILE, 'w', encoding='utf-8') as file:
             json.dump([], file)
     if not os.path.exists(HISTORY_FILE):
-        with open(HISTORY_FILE, 'w') as file:
+        with open(HISTORY_FILE, 'w', encoding='utf-8') as file:
             json.dump([{"best_score": 0}], file)
 
 # 登入界面
 def load_data(file_name):
-    with open(file_name, 'r') as file:
+    with open(file_name, 'r', encoding='utf-8') as file:
         return json.load(file)
 
 # 保存数据
 def save_data(file_name, data):
-    with open(file_name, 'w') as file:
+    with open(file_name, 'w', encoding='utf-8') as file:
         json.dump(data, file)
+
+def _is_valid_field(value, min_len):
+    return isinstance(value, str) and min_len <= len(value) <= MAX_FIELD_LEN
 
 # 用户登录管理
 def login(username, password):
     users = load_data(USER_FILE)
     for user in users:
-        if user['username'] == username and user['password'] == password:
+        if user.get('username') == username and _verify_password(user.get('password', ''), password):
+            if not user['password'].startswith(f"{PASSWORD_SCHEME}$"):
+                user['password'] = _hash_password(password)
+                save_data(USER_FILE, users)
             return user
     return None
 
 # 注册用户
 def register_user(username, password):
+    if not _is_valid_field(username, MIN_USERNAME_LEN):
+        print("Invalid username.")
+        return False
+    if not _is_valid_field(password, MIN_PASSWORD_LEN):
+        print("Invalid password.")
+        return False
     users = load_data(USER_FILE)
     for user in users:
         if user['username'] == username:
             print("Username already exists.")
             return False
-    users.append({'username': username, 'password': password})
+    users.append({'username': username, 'password': _hash_password(password)})
     save_data(USER_FILE, users)
     return True
 
@@ -65,7 +132,6 @@ def create_login_window():
         # 获取用户名和密码
         username = username_entry.get()
         password = password_entry.get()
-        user = login(username, password)
         if register_user(username, password):
             messagebox.showinfo("Registration Success", "Registration successful.")
         else:

@@ -51,8 +51,8 @@ class PillarGroup(pygame.sprite.Group):
 
     def update(self):
         self.check()
+        self.spd += BG_AC * TIMESPAN
         for sprite in self:
-            self.spd += BG_AC * TIMESPAN
             sprite.rect.left -= self.spd * TIMESPAN
             self.surface.blit(sprite.image, sprite.rect)
 
